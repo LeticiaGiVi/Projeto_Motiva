@@ -2,8 +2,8 @@ import {Link} from 'react-router-dom'
 
 function Navbar() {
     return ( 
-        <nav>
-            <ul className='flex flex-row gap-2'>
+        <nav className='h-auto'>
+            <ul className='flex flex-row gap-2 font-semibold text-xl'>
                 <li><Link to="/"> Dashboards </Link></li>
                 <li><Link to="/mapas"> Mapas </Link></li>
                 <li><Link to="/cronogramas"> Cronograma </Link></li>
