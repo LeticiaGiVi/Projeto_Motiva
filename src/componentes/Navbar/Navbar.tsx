@@ -1,18 +1,21 @@
-import {Link} from 'react-router-dom'
-
+import { NavLink } from 'react-router-dom'
+ 
+const linkClass = ({ isActive }: { isActive: boolean }) =>
+    isActive ? 'font-bold' : 'font-normal'
+ 
 function Navbar() {
     return ( 
         <nav className='h-auto'>
-            <ul className='flex flex-row gap-2 font-semibold text-xl'>
-                <li><Link to="/"> Dashboards </Link></li>
-                <li><Link to="/mapas"> Mapas </Link></li>
-                <li><Link to="/cronogramas"> Cronograma </Link></li>
-                <li><Link to="/equipes"> Equipes </Link></li>
-                <li><Link to="/relatorios"> Relatorios </Link></li>
-                <li><Link to="/config"> Configurações </Link></li>
+            <ul className='flex flex-row gap-6 text-xl items-center'>
+                <li><NavLink to="/" end className={linkClass}> Dashboard </NavLink></li>
+                <li><NavLink to="/mapas" className={linkClass}> Mapas </NavLink></li>
+                <li><NavLink to="/cronogramas" className={linkClass}> Cronograma </NavLink></li>
+                <li><NavLink to="/equipes" className={linkClass}> Equipes </NavLink></li>
+                <li><NavLink to="/relatorios" className={linkClass}> Relatórios </NavLink></li>
+                <li><NavLink to="/config" className={linkClass}> configurações </NavLink></li>
             </ul>
         </nav>
      );
 }
-
+ 
 export default Navbar;

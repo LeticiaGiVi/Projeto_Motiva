@@ -1,0 +1,285 @@
+* {
+    box-sizing: border-box;
+}
+
+.map-page {
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+    background: #202020;
+}
+
+
+/* ==========================
+   HEADER
+========================== */
+
+.map-header {
+    width: 100%;
+    height: 86px;
+
+    background: #5b20f2;
+
+    display: flex;
+    align-items: center;
+
+    padding: 0 20px;
+}
+
+
+/* LOGO */
+
+.map-logo {
+    width: 60px;
+
+    color: white;
+
+    font-size: 42px;
+    font-weight: 900;
+    font-style: italic;
+}
+
+
+/* MENU */
+
+.map-navbar {
+    flex: 1;
+
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+
+    gap: 20px;
+}
+
+.map-navbar a {
+    color: white;
+
+    text-decoration: none;
+
+    font-size: 14px;
+}
+
+.map-navbar a.active {
+    font-weight: bold;
+}
+
+
+/* ==========================
+   CONTEÚDO
+========================== */
+
+.map-content {
+    width: 100%;
+
+    height: calc(100vh - 86px);
+
+    display: flex;
+}
+
+
+/* ==========================
+   SIDEBAR
+========================== */
+
+.map-sidebar {
+    width: 300px;
+    min-width: 300px;
+
+    background: #eeeeee;
+
+    padding: 12px;
+
+    border-right: 2px solid #2196f3;
+
+    overflow-y: auto;
+}
+
+.map-sidebar h2 {
+    margin: 0 0 16px;
+
+    font-size: 20px;
+
+    color: #555;
+}
+
+
+/* ==========================
+   FILTROS
+========================== */
+
+.filter {
+    margin-bottom: 18px;
+}
+
+.filter>label {
+    display: block;
+
+    margin-bottom: 7px;
+
+    font-size: 13px;
+
+    font-weight: bold;
+
+    color: #555;
+}
+
+
+/* ==========================
+   PERÍODO
+========================== */
+
+.period-buttons {
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    gap: 3px;
+}
+
+.period-buttons button {
+    height: 32px;
+
+    border: none;
+
+    background: white;
+
+    font-size: 10px;
+
+    color: #555;
+
+    cursor: pointer;
+}
+
+.period-buttons button.selected {
+    background: #dcdcdc;
+}
+
+
+/* ==========================
+   SELECT
+========================== */
+
+.filter select {
+    width: 100%;
+
+    height: 36px;
+
+    border: none;
+
+    border-radius: 4px;
+
+    padding: 0 10px;
+
+    background: white;
+
+    color: #555;
+}
+
+
+/* ==========================
+   EQUIPES
+========================== */
+
+.teams {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 8px;
+}
+
+.teams label {
+    display: flex;
+
+    align-items: center;
+
+    gap: 6px;
+
+    font-size: 12px;
+
+    color: #555;
+}
+
+.teams input {
+    width: 13px;
+    height: 13px;
+}
+
+
+/* ==========================
+   SERIEDADE
+========================== */
+
+.severity {
+    display: flex;
+
+    gap: 9px;
+}
+
+.severity button {
+    padding: 5px 10px;
+
+    background: white;
+
+    border-radius: 4px;
+
+    font-size: 10px;
+
+    cursor: pointer;
+}
+
+.severity .critical {
+    border: 1px solid #ef6c6c;
+    color: #d32f2f;
+}
+
+.severity .alert {
+    border: 1px solid #f0a44a;
+    color: #d17b00;
+}
+
+.severity .normal {
+    border: 1px solid #55c99b;
+    color: #168b61;
+}
+
+
+/* ==========================
+   BOTÃO
+========================== */
+
+.apply-button {
+    width: 100%;
+
+    height: 40px;
+
+    border: none;
+
+    border-radius: 4px;
+
+    background: white;
+
+    color: #555;
+
+    cursor: pointer;
+
+    font-size: 12px;
+}
+
+.apply-button:hover {
+    background: #e2e2e2;
+}
+
+
+/* ==========================
+   MAPA
+========================== */
+
+.map-section {
+    flex: 1;
+
+    height: 100%;
+
+    min-width: 0;
+}
