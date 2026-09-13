@@ -4,6 +4,7 @@ export interface Subvia {
   id: string;
   nome: string;
   ref: string;
+  nomeBusca?: string;
   bbox?: BBox;
   cor?: string;
 }
@@ -34,7 +35,7 @@ export const viasData: Via[] = [
       { id: "autoban-sp330", nome: "SP-330 - Rodovia Anhanguera", ref: "SP-330", bbox: BBOX_ESTADO_SP },
       { id: "autoban-sp348", nome: "SP-348 - Rodovia dos Bandeirantes", ref: "SP-348", bbox: BBOX_ESTADO_SP },
       { id: "autoban-sp300", nome: "SP-300 - Rodovia Dom Gabriel Paulino Bueno Couto", ref: "SP-300", bbox: BBOX_ESTADO_SP },
-      { id: "autoban-spi102-330", nome: "SPI-102/330 - Rodovia Adalberto Panzan", ref: "SPI-102/330", bbox: BBOX_ESTADO_SP },
+      { id: "autoban-spi102-330", nome: "SPI-102/330 - Rodovia Adalberto Panzan", ref: "SPA-102/330", nomeBusca: "Adalberto Panzan", bbox: BBOX_ESTADO_SP },
     ],
   },
   {
@@ -58,19 +59,13 @@ export const viasData: Via[] = [
     nome: "Sorocabana",
     subvias: [
       // bbox mais estreito (região de Sorocaba) pra não pegar o trecho da SPVias
-      { id: "soro-sp270", nome: "SP-270 - Raposo Tavares", ref: "SP-270", bbox: [-23.6, -47.6, -23.2, -46.8] },
-      { id: "soro-sp280", nome: "SP-280 - Castello Branco", ref: "SP-280", bbox: [-23.6, -47.6, -23.2, -46.8] },
-      { id: "soro-sp075", nome: "SP-075 - Senador José Ermirio de Moraes (Castelinho)", ref: "SP-075", bbox: BBOX_ESTADO_SP },
-      { id: "soro-sp079", nome: "SP-079 - Raimundo Antunes Soares / Padre Guilherme Hovel-Svd / Tenente Celestino Américo", ref: "SP-079", bbox: BBOX_ESTADO_SP },
-      { id: "soro-sp250", nome: "SP-250 - Bunjiro Nakao / José de Carvalho / Nestor Fogaça", ref: "SP-250", bbox: BBOX_ESTADO_SP },
-      { id: "soro-sp264", nome: "SP-264 - João Leme Dos Santos / Francisco José Ayub", ref: "SP-264", bbox: BBOX_ESTADO_SP },
-      { id: "soro-spa160-250", nome: "SPA-160/250 - José de Almeida Rosa", ref: "SPA-160/250", bbox: BBOX_ESTADO_SP },
-      { id: "soro-spa103-079", nome: "SPA-103/079 - Doutor Miguel Affonso Ferreira de Castilho", ref: "SPA-103/079", bbox: BBOX_ESTADO_SP },
-      { id: "soro-spa104-079", nome: "SPA-104/079 - João Guimarães", ref: "SPA-104/079", bbox: BBOX_ESTADO_SP },
-      { id: "soro-spa053-280", nome: "SPA-053/280 - Prefeito Livio Tagliassachi", ref: "SPA-053/280", bbox: BBOX_ESTADO_SP },
-      { id: "soro-spi087-270", nome: "SPI-087/270 - Raposo Tavares", ref: "SPI-087/270", bbox: BBOX_ESTADO_SP },
-      { id: "soro-spi060-270", nome: "SPI-060/270 - Raposo Tavares", ref: "SPI-060/270", bbox: BBOX_ESTADO_SP },
-      { id: "soro-spi091-270", nome: "SPI-091/270 - Doutor Celso Charuri", ref: "SPI-091/270", bbox: BBOX_ESTADO_SP },
+      { id: "soro-spa160-250", nome: "SPA-160/250 - José de Almeida Rosa", ref: "SPA-160/250", nomeBusca: "Almeida Rosa", bbox: BBOX_ESTADO_SP },
+      { id: "soro-spa103-079", nome: "SPA-103/079 - Doutor Miguel Affonso Ferreira de Castilho", ref: "SPA-103/079", nomeBusca: "Castilho", bbox: BBOX_ESTADO_SP },
+      { id: "soro-spa104-079", nome: "SPA-104/079 - João Guimarães", ref: "SPA-104/079", nomeBusca: "Guimarães", bbox: BBOX_ESTADO_SP },
+      { id: "soro-spa053-280", nome: "SPA-053/280 - Prefeito Livio Tagliassachi", ref: "SPA-053/280", nomeBusca: "Tagliassachi", bbox: BBOX_ESTADO_SP },
+      { id: "soro-spi087-270", nome: "SPI-087/270 - Raposo Tavares", ref: "SPI-087/270", nomeBusca: "Raposo Tavares", bbox: BBOX_ESTADO_SP },
+      { id: "soro-spi060-270", nome: "SPI-060/270 - Raposo Tavares", ref: "SPI-060/270", nomeBusca: "Raposo Tavares", bbox: BBOX_ESTADO_SP },
+      { id: "soro-spi091-270", nome: "SPI-091/270 - Doutor Celso Charuri", ref: "SPI-091/270", nomeBusca: "Celso Charuri", bbox: BBOX_ESTADO_SP },
     ],
   },
   {

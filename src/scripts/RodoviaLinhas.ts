@@ -3,33 +3,36 @@ import type { BBox } from "./viasData";
 
 export type Coordenada = [number, number];
 
-// Cache em memória: evita buscar a mesma rodovia de novo toda vez
-// que o usuário marca/desmarca o filtro.
 const cache = new Map<string, Coordenada[][]>();
-
 const OVERPASS_URL = "https://overpass-api.de/api/interpreter";
 
-interface OsmNode {
-  type: "node";
-  id: number;
-  lat: number;
-  lon: number;
+// --- limitador de concorrência: no máximo 2 requisições ao Overpass por vez ---
+const MAX_CONCORRENTES = 2;
+let ativos = 0;
+const fila: Array<() => void> = [];
+
+function comLimite<T>(tarefa: () => Promise<T>): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const executar = () => {
+      ativos++;
+      tarefa()
+        .then(resolve, reject)
+        .finally(() => {
+          ativos--;
+          const proxima = fila.shift();
+          if (proxima) proxima();
+        });
+    };
+    if (ativos < MAX_CONCORRENTES) executar();
+    else fila.push(executar);
+  });
 }
 
-interface OsmWay {
-  type: "way";
-  id: number;
-  nodes: number[];
-}
-
+interface OsmNode { type: "node"; id: number; lat: number; lon: number; }
+interface OsmWay { type: "way"; id: number; nodes: number[]; }
 type OsmElement = OsmNode | OsmWay | { type: string };
+interface OsmResponse { elements: OsmElement[]; }
 
-interface OsmResponse {
-  elements: OsmElement[];
-}
-
-// Converte a resposta crua do Overpass em uma lista de linhas
-// (cada `way` vira uma linha, já como [lat, lng][] pronta pro Leaflet).
 function converterParaLinhas(osmData: OsmResponse): Coordenada[][] {
   const nos = new Map<number, Coordenada>();
   const ways: OsmWay[] = [];
@@ -44,12 +47,28 @@ function converterParaLinhas(osmData: OsmResponse): Coordenada[][] {
   }
 
   return ways
-    .map((way) =>
-      way.nodes
-        .map((id) => nos.get(id))
-        .filter((coord): coord is Coordenada => coord !== undefined)
-    )
-    .filter((linha) => linha.length > 1); // descarta ways sem geometria útil
+    .map((way) => way.nodes.map((id) => nos.get(id)).filter((c): c is Coordenada => c !== undefined))
+    .filter((linha) => linha.length > 1);
+}
+
+// retry com backoff simples para 429 (rate limit) e 504 (timeout do servidor)
+async function buscarComRetry(query: string, tentativas = 3): Promise<OsmResponse> {
+  for (let i = 0; i < tentativas; i++) {
+    const res = await fetch(OVERPASS_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: "data=" + encodeURIComponent(query),
+    });
+
+    if (res.status === 429 || res.status === 504) {
+      if (i === tentativas - 1) throw new Error(`Overpass indisponível (${res.status}) após ${tentativas} tentativas`);
+      await new Promise((r) => setTimeout(r, 1500 * (i + 1))); // 1.5s, 3s, 4.5s...
+      continue;
+    }
+    if (!res.ok) throw new Error(`Overpass respondeu ${res.status}`);
+    return res.json();
+  }
+  throw new Error("Overpass indisponível");
 }
 
 interface ResultadoRodovia {
@@ -58,11 +77,11 @@ interface ResultadoRodovia {
   erro: string | null;
 }
 
-export function useRodoviaLinhas(ref: string, bbox?: BBox): ResultadoRodovia {
-  const chave = `${ref}|${bbox?.join(",") ?? ""}`;
-  const [linhas, setLinhas] = useState<Coordenada[][] | null>(
-    cache.get(chave) ?? null
-  );
+// nomeBusca: usado como alternativa/complemento ao ref, para casos onde o
+// ref cadastrado (ex: "SPI-102/330") não é o valor real da tag no OSM.
+export function useRodoviaLinhas(ref: string, bbox?: BBox, nomeBusca?: string): ResultadoRodovia {
+  const chave = `${ref}|${nomeBusca ?? ""}|${bbox?.join(",") ?? ""}`;
+  const [linhas, setLinhas] = useState<Coordenada[][] | null>(cache.get(chave) ?? null);
   const [carregando, setCarregando] = useState(!cache.has(chave));
   const [erro, setErro] = useState<string | null>(null);
 
@@ -78,27 +97,25 @@ export function useRodoviaLinhas(ref: string, bbox?: BBox): ResultadoRodovia {
     setErro(null);
 
     const filtroArea = bbox ? `(${bbox.join(",")})` : "";
+    const clausulas = [`way["highway"]["ref"~"${ref}"]${filtroArea};`];
+    if (nomeBusca) {
+      clausulas.push(`way["highway"]["name"~"${nomeBusca}"]${filtroArea};`);
+    }
+
     const overpassQuery = `
       [out:json][timeout:25];
       (
-        way["highway"]["ref"~"${ref}"]${filtroArea};
+        ${clausulas.join("\n        ")}
       );
       out body;
       >;
       out skel qt;
     `;
 
-    fetch(OVERPASS_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: "data=" + encodeURIComponent(overpassQuery),
-    })
-      .then((res) => {
-        if (!res.ok) throw new Error(`Overpass respondeu ${res.status}`);
-        return res.json();
-      })
-      .then((osmData: OsmResponse) => {
+    comLimite(() => buscarComRetry(overpassQuery))
+      .then((osmData) => {
         const resultado = converterParaLinhas(osmData);
+        console.log(`[Overpass] ref="${ref}" nome="${nomeBusca ?? ""}" -> ${resultado.length} linha(s)`);
         if (!cancelado) {
           cache.set(chave, resultado);
           setLinhas(resultado);
@@ -112,10 +129,8 @@ export function useRodoviaLinhas(ref: string, bbox?: BBox): ResultadoRodovia {
         if (!cancelado) setCarregando(false);
       });
 
-    return () => {
-      cancelado = true;
-    };
-  }, [chave, ref, bbox]);
+    return () => { cancelado = true; };
+  }, [chave, ref, nomeBusca, bbox]);
 
   return { linhas, carregando, erro };
 }

@@ -9,7 +9,7 @@ interface RodoviaLayerProps {
 }
 
 export default function RodoviaLayer({ via, subvia, cor }: RodoviaLayerProps) {
-  const { linhas, erro } = useRodoviaLinhas(subvia.ref, subvia.bbox);
+  const { linhas, erro } = useRodoviaLinhas(subvia.ref, subvia.bbox, subvia.nomeBusca);
 
   if (erro || !linhas) return null;
 
