@@ -1,16 +1,16 @@
 import { viasData } from "../../scripts/viasData";
 
 interface ViaFilterProps {
-  selectedVias: Set<string>;
+  viasExpandidas: Set<string>;
   selectedSubvias: Set<string>;
-  onToggleVia: (viaId: string) => void;
+  onToggleViaExpandida: (viaId: string) => void;
   onToggleSubvia: (subviaId: string) => void;
 }
 
 export default function ViaFilter({
-  selectedVias,
+  viasExpandidas,
   selectedSubvias,
-  onToggleVia,
+  onToggleViaExpandida,
   onToggleSubvia,
 }: ViaFilterProps) {
   return (
@@ -19,40 +19,68 @@ export default function ViaFilter({
 
       <div className="flex max-h-80 flex-col gap-1 overflow-y-auto pr-1">
         {viasData.map((via) => {
-          const viaSelecionada = selectedVias.has(via.id);
+          const expandida = viasExpandidas.has(via.id);
+          const qtdAtivas = via.subvias.filter((s) =>
+            selectedSubvias.has(s.id)
+          ).length;
 
           return (
             <div
               key={via.id}
               className="border-b border-gray-200 pb-1 last:border-b-0"
             >
-              <label className="flex cursor-pointer items-center gap-1.5 font-semibold text-gray-800">
-                <input
-                  type="checkbox"
-                  checked={viaSelecionada}
-                  onChange={() => onToggleVia(via.id)}
-                  className="h-4 w-4 accent-blue-600"
-                />
-                {via.nome}
-              </label>
+              {/* Cabeçalho da via: só expande/colapsa a lista de pistas */}
+              <button
+                type="button"
+                onClick={() => onToggleViaExpandida(via.id)}
+                className="flex w-full cursor-pointer items-center justify-between gap-1.5 bg-transparent py-1 text-left font-semibold text-gray-800"
+              >
+                <span className="flex items-center gap-1.5">
+                  <span
+                    className={`inline-block text-xs text-gray-500 transition-transform ${
+                      expandida ? "rotate-90" : ""
+                    }`}
+                  >
+                    ▶
+                  </span>
+                  {via.nome}
+                </span>
 
-              {/* Ao selecionar a via, exibe o checkbox de cada subvia */}
-              {viaSelecionada && (
-                <div className="ml-5 mt-1 flex flex-col gap-0.5">
-                  {via.subvias.map((subvia) => (
-                    <label
-                      key={subvia.id}
-                      className="flex cursor-pointer items-center gap-1.5 text-sm font-normal text-gray-600"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={selectedSubvias.has(subvia.id)}
-                        onChange={() => onToggleSubvia(subvia.id)}
-                        className="h-3.5 w-3.5 accent-blue-600"
-                      />
-                      {subvia.nome}
-                    </label>
-                  ))}
+                {qtdAtivas > 0 && (
+                  <span className="rounded-full bg-blue-600 px-1.5 py-0.5 text-[10px] font-normal text-white">
+                    {qtdAtivas}
+                  </span>
+                )}
+              </button>
+
+              {/* Lista de pistas: cada uma com toggle próprio, independente */}
+              {expandida && (
+                <div className="ml-5 mt-1 flex flex-col gap-1.5">
+                  {via.subvias.map((subvia) => {
+                    const ativa = selectedSubvias.has(subvia.id);
+
+                    return (
+                      <div
+                        key={subvia.id}
+                        className="flex items-center justify-between gap-2"
+                      >
+                        <span className="text-sm font-normal text-gray-600">
+                          {subvia.nome}
+                        </span>
+
+                        <label className="relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center">
+                          <input
+                            type="checkbox"
+                            checked={ativa}
+                            onChange={() => onToggleSubvia(subvia.id)}
+                            className="peer sr-only"
+                          />
+                          <span className="absolute inset-0 rounded-full bg-gray-300 transition-colors peer-checked:bg-blue-600" />
+                          <span className="absolute left-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform peer-checked:translate-x-4" />
+                        </label>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>

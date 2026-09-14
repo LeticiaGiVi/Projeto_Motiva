@@ -6,6 +6,13 @@ export type Coordenada = [number, number];
 const cache = new Map<string, Coordenada[][]>();
 const OVERPASS_URL = "https://overpass-api.de/api/interpreter";
 
+// requisições em andamento por chave: evita que duas chamadas concorrentes
+// para a mesma rodovia (ex: StrictMode montando o efeito 2x, ou duas
+// subvias com a mesma query) disparem 2 fetches separados ao Overpass.
+// A 2ª chamada simplesmente "pega carona" na 1ª, em vez de arriscar um
+// 504/429 independente e descartar um resultado bom.
+const emAndamento = new Map<string, Promise<OsmResponse>>();
+
 // --- limitador de concorrência: no máximo 2 requisições ao Overpass por vez ---
 const MAX_CONCORRENTES = 2;
 let ativos = 0;
@@ -112,7 +119,18 @@ export function useRodoviaLinhas(ref: string, bbox?: BBox, nomeBusca?: string): 
       out skel qt;
     `;
 
-    comLimite(() => buscarComRetry(overpassQuery))
+    let promise = emAndamento.get(chave);
+    if (!promise) {
+      promise = comLimite(() => buscarComRetry(overpassQuery));
+      emAndamento.set(chave, promise);
+      promise.finally(() => {
+        // só remove se ainda for a promise atual (evita corrida com uma
+        // nova busca que já tenha começado pra mesma chave)
+        if (emAndamento.get(chave) === promise) emAndamento.delete(chave);
+      });
+    }
+
+    promise
       .then((osmData) => {
         const resultado = converterParaLinhas(osmData);
         console.log(`[Overpass] ref="${ref}" nome="${nomeBusca ?? ""}" -> ${resultado.length} linha(s)`);

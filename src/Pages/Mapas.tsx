@@ -1,33 +1,23 @@
 import { useMemo, useState } from "react";
 import MapView from "../componentes/mapa/MapView.tsx";
 import ViaFilter from "../componentes/Filtros/ViaFilter.tsx";
-import { viasData } from "../scripts/viasData.ts";
 import "../Style/MapPage.css";
 
 export default function MapPage() {
-  const [selectedVias, setSelectedVias] = useState<Set<string>>(new Set());
+  // controla apenas quais grupos (vias) estão expandidos na lista do filtro
+  const [viasExpandidas, setViasExpandidas] = useState<Set<string>>(new Set());
+
+  // controla quais pistas (subvias) estão com o toggle ligado -> únicas exibidas no mapa
   const [selectedSubvias, setSelectedSubvias] = useState<Set<string>>(new Set());
 
-  function toggleVia(viaId: string) {
-    setSelectedVias((prev) => {
+  function toggleViaExpandida(viaId: string) {
+    setViasExpandidas((prev) => {
       const novo = new Set(prev);
-
       if (novo.has(viaId)) {
         novo.delete(viaId);
-
-        // ao desmarcar a via, limpa também as subvias dela
-        const via = viasData.find((v) => v.id === viaId);
-        if (via) {
-          setSelectedSubvias((prevSub) => {
-            const novoSub = new Set(prevSub);
-            via.subvias.forEach((s) => novoSub.delete(s.id));
-            return novoSub;
-          });
-        }
       } else {
         novo.add(viaId);
       }
-
       return novo;
     });
   }
@@ -35,32 +25,21 @@ export default function MapPage() {
   function toggleSubvia(subviaId: string) {
     setSelectedSubvias((prev) => {
       const novo = new Set(prev);
-      novo.has(subviaId) ? novo.delete(subviaId) : novo.add(subviaId);
+      if (novo.has(subviaId)) {
+        novo.delete(subviaId);
+      } else {
+        novo.add(subviaId);
+      }
       return novo;
     });
   }
 
-  // Regras de exibição no mapa:
-  // - via + subvia(s) marcadas  -> mostra só as subvias marcadas
-  // - via marcada sem subvias   -> mostra todas as subvias da via
-  // - via não marcada           -> não mostra nada
-  const subviasVisiveis = useMemo(() => {
-    const visiveis: string[] = [];
-
-    for (const via of viasData) {
-      if (!selectedVias.has(via.id)) continue;
-
-      const marcadas = via.subvias.filter((s) => selectedSubvias.has(s.id));
-
-      if (marcadas.length > 0) {
-        visiveis.push(...marcadas.map((s) => s.id));
-      } else {
-        visiveis.push(...via.subvias.map((s) => s.id));
-      }
-    }
-
-    return visiveis;
-  }, [selectedVias, selectedSubvias]);
+  // Regra de exibição no mapa: só aparece a pista (subvia) cujo toggle
+  // estiver marcado. Expandir/recolher a via não afeta o que é exibido.
+  const subviasVisiveis = useMemo(
+    () => Array.from(selectedSubvias),
+    [selectedSubvias]
+  );
 
   return (
     <div className="map-page">
@@ -78,12 +57,12 @@ export default function MapPage() {
             </div>
           </div>
 
-          {/* VIA - seletor hierárquico */}
+          {/* VIA - lista de pistas com toggle individual */}
           <div className="filter">
             <ViaFilter
-              selectedVias={selectedVias}
+              viasExpandidas={viasExpandidas}
               selectedSubvias={selectedSubvias}
-              onToggleVia={toggleVia}
+              onToggleViaExpandida={toggleViaExpandida}
               onToggleSubvia={toggleSubvia}
             />
           </div>
