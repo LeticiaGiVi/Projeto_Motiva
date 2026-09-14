@@ -1,19 +1,15 @@
 import { useEffect, useState } from "react";
 import type { BBox } from "./viasData";
+import { getFromCache, saveToCache } from "./rodoviaLinhasCache";
 
 export type Coordenada = [number, number];
 
 const cache = new Map<string, Coordenada[][]>();
 const OVERPASS_URL = "https://overpass-api.de/api/interpreter";
 
-// requisições em andamento por chave: evita que duas chamadas concorrentes
-// para a mesma rodovia (ex: StrictMode montando o efeito 2x, ou duas
-// subvias com a mesma query) disparem 2 fetches separados ao Overpass.
-// A 2ª chamada simplesmente "pega carona" na 1ª, em vez de arriscar um
-// 504/429 independente e descartar um resultado bom.
+
 const emAndamento = new Map<string, Promise<OsmResponse>>();
 
-// --- limitador de concorrência: no máximo 2 requisições ao Overpass por vez ---
 const MAX_CONCORRENTES = 2;
 let ativos = 0;
 const fila: Array<() => void> = [];
@@ -93,8 +89,20 @@ export function useRodoviaLinhas(ref: string, bbox?: BBox, nomeBusca?: string): 
   const [erro, setErro] = useState<string | null>(null);
 
   useEffect(() => {
+    // 1) já está em memória (cache da sessão)? usa direto
     if (cache.has(chave)) {
       setLinhas(cache.get(chave)!);
+      setCarregando(false);
+      return;
+    }
+
+    // 2) está no localStorage e ainda válido? usa direto, sem ir à rede.
+    //    Também alimenta o cache em memória pra não precisar reler o
+    //    localStorage se o componente remontar na mesma sessão.
+    const doLocalStorage = getFromCache(chave);
+    if (doLocalStorage) {
+      cache.set(chave, doLocalStorage);
+      setLinhas(doLocalStorage);
       setCarregando(false);
       return;
     }
@@ -136,6 +144,7 @@ export function useRodoviaLinhas(ref: string, bbox?: BBox, nomeBusca?: string): 
         console.log(`[Overpass] ref="${ref}" nome="${nomeBusca ?? ""}" -> ${resultado.length} linha(s)`);
         if (!cancelado) {
           cache.set(chave, resultado);
+          saveToCache(chave, resultado); // <- persiste no localStorage
           setLinhas(resultado);
         }
       })
