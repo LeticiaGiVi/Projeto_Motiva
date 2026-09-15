@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import {
-  Equipe,
+  type Equipe,
   equipesDisponiveisNoDia,
   equipesIndisponiveisNoDia,
   equipesOcupadasNoDia,
@@ -11,7 +11,7 @@ import {
   trechosDaEquipe,
   trechosNaVia,
   viasDisponiveis,
-} from "../dados/Equipes.json";
+} from "../dados/Equipes";
 
 const DIAS_SEMANA = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 

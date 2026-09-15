@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { equipes, funcionarios, trechosDaEquipe } from "../dados/Equipes.json";
+import { equipes, funcionarios, trechosDaEquipe } from "../dados/Equipes";
 
 const abas = ["Funcionários", "Trechos da Via", "Parâmetros Gerais"] as const;
 type Aba = (typeof abas)[number];

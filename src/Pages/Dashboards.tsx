@@ -1,16 +1,24 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { GroupedBarChart, SimpleBarChart, MultiLineChart } from "../componentes/Charts/MiniCharts";
+import {
+  equipes,
+  viasDisponiveis,
+  trechosNaVia,
+  todasAsDatas,
+  equipesOcupadasNoDia,
+  equipesIndisponiveisNoDia,
+  paraIso,
+  type StatusEquipe,
+} from "../dados/Equipes";
 
 type Periodo = "Hoje" | "Últimos 7 dias" | "Último mês" | "Personalizado";
 type Severidade = "Crítico" | "Alerta" | "Normal";
-type StatusTrecho = "Crítico" | "Alerta" | "Normal";
 
-const EQUIPES = ["Equipe 1", "Equipe 2", "Equipe 3", "Equipe 4"];
-
-const statusStyles: Record<StatusTrecho, string> = {
-  Crítico: "bg-red-100 text-red-600",
-  Alerta: "bg-amber-100 text-amber-600",
-  Normal: "bg-emerald-100 text-emerald-600",
+const statusStyles: Record<StatusEquipe, string> = {
+  "Em Campo": "bg-blue-100 text-blue-600",
+  Disponível: "bg-emerald-100 text-emerald-600",
+  "Em Manutenção": "bg-amber-100 text-amber-600",
+  "De Férias": "bg-gray-100 text-gray-500",
 };
 
 const severidadeStyles: Record<Severidade, { active: string; base: string }> = {
@@ -19,48 +27,91 @@ const severidadeStyles: Record<Severidade, { active: string; base: string }> = {
   Normal: { base: "border-emerald-200 text-emerald-500", active: "bg-emerald-500 text-white border-emerald-500" },
 };
 
-const resumoTrechos: {
-  km: string;
-  alturaAtual: string;
-  ultimaPoda: string;
-  diasDesde: number;
-  proximoCorte: string;
-  status: StatusTrecho;
-}[] = [
-  { km: "0–10", alturaAtual: "18 cm", ultimaPoda: "12/01", diasDesde: 28, proximoCorte: "15/02", status: "Crítico" },
-  { km: "10–20", alturaAtual: "14 cm", ultimaPoda: "18/01", diasDesde: 22, proximoCorte: "08/02", status: "Alerta" },
-  { km: "20–30", alturaAtual: "10 cm", ultimaPoda: "02/02", diasDesde: 6, proximoCorte: "16/02", status: "Normal" },
-  { km: "30–40", alturaAtual: "12 cm", ultimaPoda: "05/02", diasDesde: 3, proximoCorte: "12/02", status: "Normal" },
-  { km: "40–50", alturaAtual: "16 cm", ultimaPoda: "10/01", diasDesde: 30, proximoCorte: "10/02", status: "Crítico" },
-  { km: "50–60", alturaAtual: "9 cm", ultimaPoda: "15/01", diasDesde: 25, proximoCorte: "10/02", status: "Alerta" },
-];
-
-const disponibilidade = [
-  { equipe: "Equipe 1", dias: 3 },
-  { equipe: "Equipe 2", dias: 0 },
-  { equipe: "Equipe 3", dias: 5 },
-  { equipe: "Equipe 4", dias: 3 },
-];
-
-const horasSemana = ["Seg", "Ter", "Qua", "Qui", "Sex"];
 const coresEquipe = ["bg-blue-500", "bg-amber-400", "bg-emerald-500", "bg-violet-500"];
 
+/** Usa a data de hoje se ela existir na base; senão cai pra primeira data disponível. */
+function diaDeReferencia(datas: string[]): string {
+  const hoje = new Date();
+  const iso = paraIso(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
+  return datas.includes(iso) ? iso : datas[0] ?? iso;
+}
+
 export default function Dashboards() {
+  const nomesEquipes = useMemo(() => equipes.map((e) => e.nomeEquipe), []);
+  const vias = useMemo(viasDisponiveis, []);
+  const datas = useMemo(todasAsDatas, []);
+  const diaAtual = useMemo(() => diaDeReferencia(datas), [datas]);
+
   const [periodo, setPeriodo] = useState<Periodo>("Hoje");
-  const [via, setVia] = useState("RoSP");
-  const [equipesSelecionadas, setEquipesSelecionadas] = useState<string[]>(["Alpha"]);
+  const [via, setVia] = useState(vias[0] ?? "");
+  const [equipesSelecionadas, setEquipesSelecionadas] = useState<string[]>(nomesEquipes);
   const [severidades, setSeveridades] = useState<Severidade[]>([]);
   const [km, setKm] = useState(0);
 
   function toggleEquipe(equipe: string) {
     setEquipesSelecionadas((prev) =>
-      prev.includes(equipe) ? prev.filter((e) => e !== equipe) : [...prev, equipe]
+      prev.includes(equipe) ? prev.filter((e) => e !== equipe) : [...prev, equipe],
     );
   }
 
   function toggleSeveridade(sev: Severidade) {
     setSeveridades((prev) => (prev.includes(sev) ? prev.filter((s) => s !== sev) : [...prev, sev]));
   }
+
+  // Equipes filtradas pelo que está marcado na barra lateral.
+  const equipesFiltradas = useMemo(
+    () => equipes.filter((e) => equipesSelecionadas.includes(e.nomeEquipe)),
+    [equipesSelecionadas],
+  );
+
+  // KPI: quantas equipes (do filtro) estão em campo no dia de referência, na via escolhida.
+  const emCampoHoje = useMemo(
+    () =>
+      equipesOcupadasNoDia(diaAtual, via || undefined).filter((e) =>
+        equipesSelecionadas.includes(e.nomeEquipe),
+      ),
+    [diaAtual, via, equipesSelecionadas],
+  );
+
+  // KPI / seção "pendentes": equipes indisponíveis (manutenção / férias) na via escolhida.
+  const pendentesHoje = useMemo(
+    () =>
+      equipesIndisponiveisNoDia(diaAtual, via || undefined).filter((e) =>
+        equipesSelecionadas.includes(e.nomeEquipe),
+      ),
+    [diaAtual, via, equipesSelecionadas],
+  );
+
+  // Disponibilidade real: dias vagos de cada equipe sobre o total de dias cobertos pela base.
+  const disponibilidade = useMemo(
+    () =>
+      equipesFiltradas.map((e) => ({
+        equipe: e.nomeEquipe,
+        dias: e.diasVagos.length,
+        totalDias: datas.length || 1,
+      })),
+    [equipesFiltradas, datas],
+  );
+
+  // Tabela de trechos: dados reais (via, km, equipe responsável, status),
+  // filtrados pela via e pelo slider de km. Substitui a antiga tabela
+  // "altura/poda/eficiência", que não existe na base de dados atual.
+  const resumoTrechos = useMemo(() => {
+    if (!via) return [];
+    return equipesFiltradas
+      .flatMap((e) =>
+        trechosNaVia(e, via).map((t) => ({
+          chave: `${e.id}-${t.original}`,
+          via: t.via,
+          trecho: t.rotulo,
+          kmInicio: t.kmInicio,
+          kmFim: t.kmFim,
+          equipe: e.nomeEquipe,
+          status: e.status,
+        })),
+      )
+      .filter((t) => km === 0 || (km >= t.kmInicio && km <= t.kmFim));
+  }, [equipesFiltradas, via, km]);
 
   return (
     <div className="w-full flex bg-gray-50 min-h-screen">
@@ -94,16 +145,18 @@ export default function Dashboards() {
             onChange={(e) => setVia(e.target.value)}
             className="w-full text-sm border border-gray-200 rounded-md px-2 py-1.5 text-gray-600"
           >
-            <option value="RoSP">RoSP</option>
-            <option value="BR-101">BR-101</option>
-            <option value="BR-116">BR-116</option>
+            {vias.map((v) => (
+              <option key={v} value={v}>
+                {v}
+              </option>
+            ))}
           </select>
         </div>
 
         <div>
           <p className="text-xs font-medium text-gray-500 mb-2">Equipe:</p>
           <div className="flex flex-col gap-1.5">
-            {EQUIPES.map((equipe) => (
+            {nomesEquipes.map((equipe) => (
               <label key={equipe} className="flex items-center gap-2 text-sm text-gray-600">
                 <input
                   type="checkbox"
@@ -114,13 +167,13 @@ export default function Dashboards() {
                 {equipe}
               </label>
             ))}
-            <label className="flex items-center gap-2 text-sm text-gray-600">
+            <label className="flex items-center gap-2 text-sm text-gray-600 pt-1 border-t border-gray-100 mt-1">
               <input
                 type="checkbox"
-                checked={equipesSelecionadas.length === EQUIPES.length}
+                checked={equipesSelecionadas.length === nomesEquipes.length}
                 onChange={() =>
                   setEquipesSelecionadas(
-                    equipesSelecionadas.length === EQUIPES.length ? [] : [...EQUIPES]
+                    equipesSelecionadas.length === nomesEquipes.length ? [] : [...nomesEquipes],
                   )
                 }
                 className="accent-violet-600"
@@ -147,6 +200,9 @@ export default function Dashboards() {
               </button>
             ))}
           </div>
+          <p className="text-[10px] text-gray-400 mt-1">
+            *Ainda sem dado real de severidade por trecho na base atual.
+          </p>
         </div>
 
         <div>
@@ -154,7 +210,7 @@ export default function Dashboards() {
           <input
             type="range"
             min={0}
-            max={100}
+            max={260}
             value={km}
             onChange={(e) => setKm(Number(e.target.value))}
             className="w-full accent-violet-600"
@@ -174,37 +230,63 @@ export default function Dashboards() {
       <main className="flex-1 p-6 flex flex-col gap-4">
         {/* KPIs */}
         <div className="grid grid-cols-4 gap-4">
-          <KpiCard title="Eficiência de Corte" value="2,35 KM/H" subtitle="Km cortados por horas trabalhadas" />
-          <KpiCard title="Taxa de atrasos" value="5%" subtitle="25km de cortes pendentes" valueClassName="text-red-500" />
-          <KpiCard title="Quilômetros cortados hoje" value="10 KM" subtitle="Km programados para hoje" />
-          <KpiCard title="Equipes em campo" value="7" subtitle="Equipes trabalhando agora" />
+          <KpiCard
+            title="Equipes em campo"
+            value={String(emCampoHoje.length)}
+            subtitle={`De ${equipesSelecionadas.length} equipes selecionadas, hoje`}
+          />
+          <KpiCard
+            title="Equipes indisponíveis"
+            value={String(pendentesHoje.length)}
+            subtitle="Em manutenção ou de férias hoje"
+            valueClassName={pendentesHoje.length > 0 ? "text-red-500" : "text-gray-800"}
+          />
+          <KpiCard
+            title="Trechos monitorados"
+            value={String(resumoTrechos.length)}
+            subtitle={via ? `Na via ${via}` : "Selecione uma via"}
+          />
+          <KpiCard
+            title="Equipes cadastradas"
+            value={String(equipes.length)}
+            subtitle="Total na base operacional"
+          />
         </div>
 
-        {/* Cortes atrasados + histórico */}
+        {/* Cortes atrasados + histórico — mantidos como exemplo visual;
+            ainda não há série histórica de km cortado/programado na base. */}
         <div className="grid grid-cols-2 gap-4">
           <Card>
             <div className="flex items-center justify-between mb-1">
-              <h3 className="font-semibold text-gray-800">Cortes atrasados</h3>
+              <h3 className="font-semibold text-gray-800">Equipes indisponíveis na via</h3>
               <select className="text-xs border border-gray-200 rounded-md px-2 py-1 text-gray-500">
                 <option>Semana</option>
                 <option>Mês</option>
               </select>
             </div>
-            <p className="text-violet-600 text-lg font-semibold mb-2">3 KM</p>
-            <GroupedBarChart
-              labels={["Equipe 1", "Equipe 2", "Equipe 3", "Equipe 4", "Equipe 5", "Equipe 6"]}
-              seriesA={[6, 5, 7, 6, 5, 7]}
-              seriesB={[3, 4, 3, 5, 3, 4]}
-              legendA="Km Programados"
-              legendB="Km cortados"
-              maxValue={8}
-            />
+            {pendentesHoje.length === 0 ? (
+              <p className="text-xs text-gray-400 py-4">Nenhuma equipe indisponível hoje.</p>
+            ) : (
+              <div className="flex flex-col gap-2 mt-2">
+                {pendentesHoje.map((e) => (
+                  <div
+                    key={e.id}
+                    className="flex items-center justify-between text-sm border border-gray-100 rounded-md px-3 py-2"
+                  >
+                    <span className="text-gray-700">{e.nomeEquipe}</span>
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusStyles[e.status]}`}>
+                      {e.status}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
           </Card>
 
           <Card>
             <div className="flex items-center justify-between mb-3">
               <h3 className="font-semibold text-gray-800">Histórico de atrasos</h3>
-              <span className="text-xs text-gray-400">cortes</span>
+              <span className="text-xs text-gray-400">exemplo</span>
             </div>
             <SimpleBarChart
               labels={["D-9", "D-8", "D-7", "D-6", "D-5", "D-4", "D-3", "D-2", "D-1", "Hoje"]}
@@ -213,32 +295,36 @@ export default function Dashboards() {
           </Card>
         </div>
 
-        {/* Disponibilidade / linha de tendência + horas trabalhadas */}
+        {/* Disponibilidade real por equipe */}
         <div className="grid grid-cols-3 gap-4">
           <div className="col-span-2 flex flex-col gap-4">
             <Card>
               <div className="flex items-center justify-between mb-3">
-                <h3 className="font-semibold text-gray-800">Disponibilidade de equipe por</h3>
+                <h3 className="font-semibold text-gray-800">Disponibilidade de equipe</h3>
                 <span className="text-gray-400">⋮</span>
               </div>
-              <div className="flex flex-col gap-3">
-                {disponibilidade.map((d) => (
-                  <div key={d.equipe}>
-                    <div className="flex items-center justify-between text-sm text-gray-600 mb-1">
-                      <span>{d.equipe}</span>
-                      <span className="text-xs bg-violet-50 text-violet-600 px-2 py-0.5 rounded">
-                        {d.dias} de 7 dias
-                      </span>
+              {disponibilidade.length === 0 ? (
+                <p className="text-xs text-gray-400">Nenhuma equipe selecionada.</p>
+              ) : (
+                <div className="flex flex-col gap-3">
+                  {disponibilidade.map((d) => (
+                    <div key={d.equipe}>
+                      <div className="flex items-center justify-between text-sm text-gray-600 mb-1">
+                        <span>{d.equipe}</span>
+                        <span className="text-xs bg-violet-50 text-violet-600 px-2 py-0.5 rounded">
+                          {d.dias} de {d.totalDias} dias
+                        </span>
+                      </div>
+                      <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-violet-700 rounded-full"
+                          style={{ width: `${(d.dias / d.totalDias) * 100}%` }}
+                        />
+                      </div>
                     </div>
-                    <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-violet-700 rounded-full"
-                        style={{ width: `${(d.dias / 7) * 100}%` }}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </Card>
 
             <Card>
@@ -255,52 +341,61 @@ export default function Dashboards() {
           </div>
 
           <Card className="col-span-1">
-            <h3 className="font-semibold text-gray-800 mb-4">Horas trabalhadas por equipe</h3>
-            <div className="flex flex-col gap-4">
-              {horasSemana.map((dia) => (
-                <div key={dia} className="flex items-center gap-3">
-                  <span className="text-xs text-gray-400 w-6">{dia}</span>
-                  <div className="flex gap-2 flex-1">
-                    {coresEquipe.map((cor, i) => (
-                      <div key={i} className={`h-8 flex-1 rounded-md ${cor}`} />
-                    ))}
-                  </div>
-                </div>
-              ))}
+            <h3 className="font-semibold text-gray-800 mb-4">Equipes por status</h3>
+            <div className="flex flex-col gap-3">
+              {(["Em Campo", "Disponível", "Em Manutenção", "De Férias"] as StatusEquipe[]).map(
+                (status, i) => {
+                  const qtd = equipesFiltradas.filter((e) => e.status === status).length;
+                  return (
+                    <div key={status} className="flex items-center gap-3">
+                      <span className={`h-3 w-3 rounded-full ${coresEquipe[i]}`} />
+                      <span className="text-xs text-gray-600 flex-1">{status}</span>
+                      <span className="text-xs text-gray-400">{qtd}</span>
+                    </div>
+                  );
+                },
+              )}
             </div>
           </Card>
         </div>
 
-        {/* Tabela resumo dos trechos */}
+        {/* Tabela de trechos — dados reais de via/km/equipe/status */}
         <Card>
-          <h3 className="font-semibold text-gray-800 mb-3">Resumo dos trechos</h3>
+          <h3 className="font-semibold text-gray-800 mb-3">
+            Resumo dos trechos {via ? `— ${via}` : ""}
+          </h3>
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left">
               <thead>
                 <tr className="text-gray-400 text-xs border-b border-gray-100">
-                  <th className="py-2 font-medium">KM</th>
-                  <th className="py-2 font-medium">Altura atual</th>
-                  <th className="py-2 font-medium">Última poda</th>
-                  <th className="py-2 font-medium">Dias desde</th>
-                  <th className="py-2 font-medium">Próximo corte</th>
+                  <th className="py-2 font-medium">Via</th>
+                  <th className="py-2 font-medium">Trecho</th>
+                  <th className="py-2 font-medium">Equipe responsável</th>
                   <th className="py-2 font-medium">Status</th>
                 </tr>
               </thead>
               <tbody>
                 {resumoTrechos.map((t) => (
-                  <tr key={t.km} className="border-b border-gray-50 text-gray-600">
-                    <td className="py-2.5">{t.km}</td>
-                    <td className="py-2.5">{t.alturaAtual}</td>
-                    <td className="py-2.5">{t.ultimaPoda}</td>
-                    <td className="py-2.5">{t.diasDesde}</td>
-                    <td className="py-2.5">{t.proximoCorte}</td>
+                  <tr key={t.chave} className="border-b border-gray-50 text-gray-600">
+                    <td className="py-2.5">{t.via}</td>
+                    <td className="py-2.5">{t.trecho}</td>
+                    <td className="py-2.5">{t.equipe}</td>
                     <td className="py-2.5">
-                      <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${statusStyles[t.status]}`}>
+                      <span
+                        className={`text-xs px-2.5 py-1 rounded-full font-medium ${statusStyles[t.status]}`}
+                      >
                         {t.status}
                       </span>
                     </td>
                   </tr>
                 ))}
+                {resumoTrechos.length === 0 && (
+                  <tr>
+                    <td colSpan={4} className="py-6 text-center text-gray-400 text-sm">
+                      Nenhum trecho encontrado para os filtros selecionados.
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>

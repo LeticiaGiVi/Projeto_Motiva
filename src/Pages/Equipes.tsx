@@ -1,6 +1,6 @@
 import EquipeCard from "../componentes/EquipeCard/EquipeCard";
 import {
-  Equipe,
+  type Equipe,
   equipesPorVia,
   formatarData,
   kmAtual,
@@ -10,7 +10,7 @@ import {
   proximoDiaVago,
   todasAsDatas,
   trechosNaVia,
-} from "../dados/Equipes.json";
+} from "../dados/Equipes";
 
 // Dia de referência: usa a data de hoje se ela estiver no período do JSON,
 // senão cai para a primeira data disponível.
