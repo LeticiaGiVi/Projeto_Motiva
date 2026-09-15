@@ -1,0 +1,378 @@
+[
+  {
+    "id": "EQP-01",
+    "nomeEquipe": "Alfa Poda",
+    "baseOperacional": "Base Campinas - Rod. Anhanguera (SP-330)",
+    "quantidadeMembros": 4,
+    "membros": [
+      "Marcos Vinícius Ferreira",
+      "Juliana Aparecida Souza",
+      "Rafael Augusto Lima",
+      "Camila Beatriz Rocha"
+    ],
+    "diasOcupados": [
+      "2026-09-15",
+      "2026-09-16",
+      "2026-09-17",
+      "2026-09-18"
+    ],
+    "diasVagos": [
+      "2026-09-19"
+    ],
+    "status": "Em Campo",
+    "principaisVias": [
+      "Rod. Anhanguera (SP-330) - km 90 a 105",
+      "Rod. dos Bandeirantes (SP-348) - km 100 a 110"
+    ]
+  },
+  {
+    "id": "EQP-02",
+    "nomeEquipe": "Bravo Poda",
+    "baseOperacional": "Base Campinas - Rod. Anhanguera (SP-330)",
+    "quantidadeMembros": 5,
+    "membros": [
+      "Thiago Henrique Alves",
+      "Patrícia Regina Costa",
+      "Diego Fernando Oliveira",
+      "Larissa Cristina Pereira",
+      "Bruno César Martins"
+    ],
+    "diasOcupados": [
+      "2026-09-15",
+      "2026-09-16",
+      "2026-09-17"
+    ],
+    "diasVagos": [
+      "2026-09-18",
+      "2026-09-19"
+    ],
+    "status": "Em Campo",
+    "principaisVias": [
+      "Rod. Anhanguera (SP-330) - km 105 a 120"
+    ]
+  },
+  {
+    "id": "EQP-03",
+    "nomeEquipe": "Charlie Poda",
+    "baseOperacional": "Base Campinas - Rod. Anhanguera (SP-330)",
+    "quantidadeMembros": 3,
+    "membros": [
+      "Eduardo Luiz Santos",
+      "Fernanda Cristina Silva",
+      "Gustavo Henrique Ribeiro"
+    ],
+    "diasOcupados": [
+      "2026-09-15"
+    ],
+    "diasVagos": [
+      "2026-09-16",
+      "2026-09-17",
+      "2026-09-18",
+      "2026-09-19"
+    ],
+    "status": "Disponível",
+    "principaisVias": [
+      "Rod. Anhanguera (SP-330) - km 120 a 135"
+    ]
+  },
+  {
+    "id": "EQP-04",
+    "nomeEquipe": "Delta Poda",
+    "baseOperacional": "Base Campinas - Rod. Anhanguera (SP-330)",
+    "quantidadeMembros": 6,
+    "membros": [
+      "André Luís Carvalho",
+      "Vanessa Regina Barbosa",
+      "Rodrigo Pereira Nunes",
+      "Simone Aparecida Gomes",
+      "Marcelo Antônio Teixeira",
+      "Renata Fabiana Araújo"
+    ],
+    "diasOcupados": [
+      "2026-09-15",
+      "2026-09-16",
+      "2026-09-17",
+      "2026-09-18",
+      "2026-09-19"
+    ],
+    "diasVagos": [],
+    "status": "Em Campo",
+    "principaisVias": [
+      "Rod. Anhanguera (SP-330) - km 135 a 150",
+      "Rod. dos Bandeirantes (SP-348) - km 115 a 125"
+    ]
+  },
+  {
+    "id": "EQP-05",
+    "nomeEquipe": "Echo Poda",
+    "baseOperacional": "Base Campinas - Rod. Anhanguera (SP-330)",
+    "quantidadeMembros": 4,
+    "membros": [
+      "Leandro José Moraes",
+      "Priscila Helena Dias",
+      "Vitor Hugo Cardoso",
+      "Aline Fernanda Correia"
+    ],
+    "diasOcupados": [],
+    "diasVagos": [
+      "2026-09-15",
+      "2026-09-16",
+      "2026-09-17",
+      "2026-09-18",
+      "2026-09-19"
+    ],
+    "status": "Disponível",
+    "principaisVias": [
+      "Rod. Anhanguera (SP-330) - km 150 a 165"
+    ]
+  },
+  {
+    "id": "EQP-06",
+    "nomeEquipe": "Foxtrot Poda",
+    "baseOperacional": "Base Campinas - Rod. Anhanguera (SP-330)",
+    "quantidadeMembros": 5,
+    "membros": [
+      "Anderson Roberto Farias",
+      "Débora Cristiane Melo",
+      "Wagner Luiz Batista",
+      "Tatiane Aparecida Rezende",
+      "Fábio Ricardo Monteiro"
+    ],
+    "diasOcupados": [],
+    "diasVagos": [
+      "2026-09-15",
+      "2026-09-16",
+      "2026-09-17",
+      "2026-09-18",
+      "2026-09-19"
+    ],
+    "status": "Em Manutenção",
+    "principaisVias": [
+      "Rod. Anhanguera (SP-330) - km 165 a 180"
+    ]
+  },
+  {
+    "id": "EQP-07",
+    "nomeEquipe": "Golf Poda",
+    "baseOperacional": "Base Campinas - Rod. Anhanguera (SP-330)",
+    "quantidadeMembros": 3,
+    "membros": [
+      "Caio César Andrade",
+      "Jéssica Monique Pires",
+      "Rafael dos Santos Lopes"
+    ],
+    "diasOcupados": [
+      "2026-09-16",
+      "2026-09-17"
+    ],
+    "diasVagos": [
+      "2026-09-15",
+      "2026-09-18",
+      "2026-09-19"
+    ],
+    "status": "Em Campo",
+    "principaisVias": [
+      "Rod. Anhanguera (SP-330) - km 180 a 195"
+    ]
+  },
+  {
+    "id": "EQP-08",
+    "nomeEquipe": "Hotel Poda",
+    "baseOperacional": "Base Campinas - Rod. Anhanguera (SP-330)",
+    "quantidadeMembros": 4,
+    "membros": [
+      "Paulo Roberto Vieira",
+      "Cíntia Regina Azevedo",
+      "Elias Fernando Rocha",
+      "Karina Souza Freitas"
+    ],
+    "diasOcupados": [],
+    "diasVagos": [
+      "2026-09-15",
+      "2026-09-16",
+      "2026-09-17",
+      "2026-09-18",
+      "2026-09-19"
+    ],
+    "status": "De Férias",
+    "principaisVias": [
+      "Rod. Anhanguera (SP-330) - km 195 a 210"
+    ]
+  },
+  {
+    "id": "EQP-09",
+    "nomeEquipe": "Equipe Dutra 1",
+    "baseOperacional": "Base São José dos Campos - Rod. Presidente Dutra (BR-116)",
+    "quantidadeMembros": 5,
+    "membros": [
+      "Felipe Augusto Cunha",
+      "Bianca Souza Moreira",
+      "Igor Ramon Castro",
+      "Natália Cristina Ramos",
+      "Vinícius Prado Nogueira"
+    ],
+    "diasOcupados": [
+      "2026-09-15",
+      "2026-09-16",
+      "2026-09-17",
+      "2026-09-18"
+    ],
+    "diasVagos": [
+      "2026-09-19"
+    ],
+    "status": "Em Campo",
+    "principaisVias": [
+      "Rod. Presidente Dutra (BR-116) - km 155 a 170"
+    ]
+  },
+  {
+    "id": "EQP-10",
+    "nomeEquipe": "Equipe Dutra 2",
+    "baseOperacional": "Base São José dos Campos - Rod. Presidente Dutra (BR-116)",
+    "quantidadeMembros": 4,
+    "membros": [
+      "Douglas Henrique Sales",
+      "Amanda Kelly Fonseca",
+      "Rogério Luiz Peixoto",
+      "Michele Cristina Assis"
+    ],
+    "diasOcupados": [
+      "2026-09-15",
+      "2026-09-16"
+    ],
+    "diasVagos": [
+      "2026-09-17",
+      "2026-09-18",
+      "2026-09-19"
+    ],
+    "status": "Em Campo",
+    "principaisVias": [
+      "Rod. Presidente Dutra (BR-116) - km 170 a 185"
+    ]
+  },
+  {
+    "id": "EQP-11",
+    "nomeEquipe": "Equipe Dutra 3",
+    "baseOperacional": "Base São José dos Campos - Rod. Presidente Dutra (BR-116)",
+    "quantidadeMembros": 3,
+    "membros": [
+      "Alexandre Gomes Tavares",
+      "Sabrina Aparecida Leite",
+      "Ricardo José Bezerra"
+    ],
+    "diasOcupados": [],
+    "diasVagos": [
+      "2026-09-15",
+      "2026-09-16",
+      "2026-09-17",
+      "2026-09-18",
+      "2026-09-19"
+    ],
+    "status": "Disponível",
+    "principaisVias": [
+      "Rod. Presidente Dutra (BR-116) - km 185 a 200"
+    ]
+  },
+  {
+    "id": "EQP-12",
+    "nomeEquipe": "Equipe Dutra 4",
+    "baseOperacional": "Base São José dos Campos - Rod. Presidente Dutra (BR-116)",
+    "quantidadeMembros": 6,
+    "membros": [
+      "Cláudio Roberto Xavier",
+      "Daniela Souza Guimarães",
+      "Everton Luiz da Mota",
+      "Grasiele Cristina Pinto",
+      "Hélio Fernando Duarte",
+      "Isabela Cristina Nascimento"
+    ],
+    "diasOcupados": [
+      "2026-09-15",
+      "2026-09-16",
+      "2026-09-17",
+      "2026-09-18",
+      "2026-09-19"
+    ],
+    "diasVagos": [],
+    "status": "Em Campo",
+    "principaisVias": [
+      "Rod. Presidente Dutra (BR-116) - km 200 a 215",
+      "Rod. Carvalho Pinto (SP-070) - km 60 a 75"
+    ]
+  },
+  {
+    "id": "EQP-13",
+    "nomeEquipe": "Equipe Dutra 5",
+    "baseOperacional": "Base São José dos Campos - Rod. Presidente Dutra (BR-116)",
+    "quantidadeMembros": 4,
+    "membros": [
+      "Jonas Ricardo Vasconcelos",
+      "Kelly Cristina Barros",
+      "Luan Gabriel Siqueira",
+      "Mônica Aparecida Brandão"
+    ],
+    "diasOcupados": [
+      "2026-09-15"
+    ],
+    "diasVagos": [
+      "2026-09-16",
+      "2026-09-17",
+      "2026-09-18",
+      "2026-09-19"
+    ],
+    "status": "Disponível",
+    "principaisVias": [
+      "Rod. Presidente Dutra (BR-116) - km 215 a 230"
+    ]
+  },
+  {
+    "id": "EQP-14",
+    "nomeEquipe": "Equipe Dutra 6",
+    "baseOperacional": "Base São José dos Campos - Rod. Presidente Dutra (BR-116)",
+    "quantidadeMembros": 5,
+    "membros": [
+      "Nelson Augusto Coutinho",
+      "Olívia Regina Sampaio",
+      "Paulo César Vidal",
+      "Quésia Fernanda Lacerda",
+      "Renan Matheus Toledo"
+    ],
+    "diasOcupados": [],
+    "diasVagos": [
+      "2026-09-15",
+      "2026-09-16",
+      "2026-09-17",
+      "2026-09-18",
+      "2026-09-19"
+    ],
+    "status": "Em Manutenção",
+    "principaisVias": [
+      "Rod. Presidente Dutra (BR-116) - km 230 a 245"
+    ]
+  },
+  {
+    "id": "EQP-15",
+    "nomeEquipe": "Equipe Dutra 7",
+    "baseOperacional": "Base São José dos Campos - Rod. Presidente Dutra (BR-116)",
+    "quantidadeMembros": 3,
+    "membros": [
+      "Sérgio Luiz Amorim",
+      "Talita Souza Machado",
+      "Uendel Rodrigues Farias"
+    ],
+    "diasOcupados": [
+      "2026-09-17",
+      "2026-09-18"
+    ],
+    "diasVagos": [
+      "2026-09-15",
+      "2026-09-16",
+      "2026-09-19"
+    ],
+    "status": "Em Campo",
+    "principaisVias": [
+      "Rod. Presidente Dutra (BR-116) - km 245 a 260",
+      "Rod. Carvalho Pinto (SP-070) - km 75 a 90"
+    ]
+  }
+]

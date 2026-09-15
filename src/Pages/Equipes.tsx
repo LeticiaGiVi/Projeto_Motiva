@@ -1,72 +1,27 @@
 import EquipeCard from "../componentes/EquipeCard/EquipeCard";
+import {
+  Equipe,
+  equipesPorVia,
+  formatarData,
+  kmAtual,
+  mesInicial,
+  ocupadaEm,
+  paraIso,
+  proximoDiaVago,
+  todasAsDatas,
+  trechosNaVia,
+} from "../dados/Equipes.json";
 
-type EquipeInfo = {
-  nome: string;
-  status: string;
-  kmAtual: string;
-};
-
-type ViaGroup = {
-  via: string;
-  equipes: EquipeInfo[];
-};
-
-const vias: ViaGroup[] = [
-  {
-    via: "Autoban",
-    equipes: [
-      { nome: "Equipe 1", status: "Cortando", kmAtual: "KM 17 - 20" },
-      { nome: "Equipe 1", status: "Cortando", kmAtual: "KM 17 - 20" },
-      { nome: "Equipe 1", status: "Cortando", kmAtual: "KM 17 - 20" },
-      { nome: "Equipe 1", status: "Cortando", kmAtual: "KM 17 - 20" },
-    ],
-  },
-  {
-    via: "Motiva Pantanal",
-    equipes: [
-      { nome: "Equipe 1", status: "Cortando", kmAtual: "KM 17 - 20" },
-      { nome: "Equipe 1", status: "Cortando", kmAtual: "KM 17 - 20" },
-      { nome: "Equipe 1", status: "Cortando", kmAtual: "KM 17 - 20" },
-      { nome: "Equipe 1", status: "Cortando", kmAtual: "KM 17 - 20" },
-    ],
-  },
-  {
-    via: "RioSP",
-    equipes: [
-      { nome: "Equipe 1", status: "Cortando", kmAtual: "KM 17 - 20" },
-      { nome: "Equipe 1", status: "Cortando", kmAtual: "KM 17 - 20" },
-      { nome: "Equipe 1", status: "Cortando", kmAtual: "KM 17 - 20" },
-      { nome: "Equipe 1", status: "Cortando", kmAtual: "KM 17 - 20" },
-    ],
-  },
-  {
-    via: "RodoAnel",
-    equipes: [
-      { nome: "Equipe 1", status: "Cortando", kmAtual: "KM 17 - 20" },
-      { nome: "Equipe 1", status: "Cortando", kmAtual: "KM 17 - 20" },
-      { nome: "Equipe 1", status: "Cortando", kmAtual: "KM 17 - 20" },
-      { nome: "Equipe 1", status: "Cortando", kmAtual: "KM 17 - 20" },
-    ],
-  },
-  {
-    via: "Motiva Sorocabana",
-    equipes: [
-      { nome: "Equipe 1", status: "Cortando", kmAtual: "KM 17 - 20" },
-      { nome: "Equipe 1", status: "Cortando", kmAtual: "KM 17 - 20" },
-      { nome: "Equipe 1", status: "Cortando", kmAtual: "KM 17 - 20" },
-      { nome: "Equipe 1", status: "Cortando", kmAtual: "KM 17 - 20" },
-    ],
-  },
-  {
-    via: "SPVias",
-    equipes: [
-      { nome: "Equipe 1", status: "Cortando", kmAtual: "KM 17 - 20" },
-      { nome: "Equipe 1", status: "Cortando", kmAtual: "KM 17 - 20" },
-      { nome: "Equipe 1", status: "Cortando", kmAtual: "KM 17 - 20" },
-      { nome: "Equipe 1", status: "Cortando", kmAtual: "KM 17 - 20" },
-    ],
-  },
-];
+// Dia de referência: usa a data de hoje se ela estiver no período do JSON,
+// senão cai para a primeira data disponível.
+function diaDeReferencia(): string {
+  const hoje = new Date();
+  const iso = paraIso(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
+  const datas = todasAsDatas();
+  if (datas.includes(iso)) return iso;
+  const { ano, mes } = mesInicial();
+  return datas[0] ?? paraIso(ano, mes, 1);
+}
 
 const checklistPadrao = [
   { horario: "07:30", descricao: "Início do expediente", concluido: true },
@@ -75,26 +30,51 @@ const checklistPadrao = [
   { horario: "16:00", descricao: "Finalização", concluido: false },
 ];
 
-const proximaTarefaPadrao = { km: "KM 22 - 30", quando: "Amanhã 15:00" };
+function statusDoDia(equipe: Equipe, dia: string): string {
+  if (equipe.status === "Em Manutenção" || equipe.status === "De Férias") return equipe.status;
+  return ocupadaEm(equipe, dia) ? "Cortando" : "Disponível";
+}
+
+function proximaTarefa(equipe: Equipe, dia: string, via: string) {
+  const trechos = trechosNaVia(equipe, via);
+  const km = trechos[trechos.length - 1]?.rotulo ?? kmAtual(equipe);
+  const proximo = proximoDiaVago(equipe, dia);
+  return {
+    km,
+    quando: proximo ? `${formatarData(proximo)} 07:30` : "Sem janela livre",
+  };
+}
 
 export default function Equipes() {
+  const dia = diaDeReferencia();
+  const grupos = equipesPorVia();
+
   return (
     <div className="w-full bg-gray-50 min-h-screen">
-      <div className=" mx-auto p-6 flex flex-col gap-8">
-        {vias.map((grupo) => (
+      <div className="mx-auto p-6 flex flex-col gap-8">
+        {grupos.map((grupo) => (
           <section key={grupo.via} className="flex flex-col gap-3">
-            <h2 className="text-lg font-semibold text-gray-800">{grupo.via}</h2>
+            <div className="flex items-baseline gap-3">
+              <h2 className="text-lg font-semibold text-gray-800">{grupo.via}</h2>
+              <span className="text-xs text-gray-400">
+                {grupo.equipes.length} {grupo.equipes.length === 1 ? "equipe" : "equipes"}
+              </span>
+            </div>
+
             <div className="grid grid-cols-4 gap-4">
-              {grupo.equipes.map((equipe, i) => (
-                <EquipeCard
-                  key={`${grupo.via}-${i}`}
-                  nome={equipe.nome}
-                  status={equipe.status}
-                  kmAtual={equipe.kmAtual}
-                  checklist={checklistPadrao}
-                  proximaTarefa={proximaTarefaPadrao}
-                />
-              ))}
+              {grupo.equipes.map((equipe) => {
+                const trechos = trechosNaVia(equipe, grupo.via);
+                return (
+                  <EquipeCard
+                    key={`${grupo.via}-${equipe.id}`}
+                    nome={equipe.nomeEquipe}
+                    status={statusDoDia(equipe, dia)}
+                    kmAtual={trechos[0]?.rotulo ?? kmAtual(equipe)}
+                    checklist={checklistPadrao}
+                    proximaTarefa={proximaTarefa(equipe, dia, grupo.via)}
+                  />
+                );
+              })}
             </div>
           </section>
         ))}
