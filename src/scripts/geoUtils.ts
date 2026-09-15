@@ -77,6 +77,74 @@ export function pontosACadaKm(
   return pontos;
 }
 
+export interface SegmentacaoKm {
+  /**
+   * Trechos da linha original entre cada marco de km (e nas pontas: do
+   * início real até o primeiro marco, e do último marco até o fim real).
+   * Cada trecho preserva TODOS os vértices originais nesse intervalo, além
+   * dos pontos interpolados nas extremidades — por isso o desenho continua
+   * seguindo a curva real da via, em vez de virar uma reta entre marcos.
+   * `segmentos.length === pontosKm.length + 1`.
+   */
+  segmentos: Coordenada[][];
+  pontosKm: PontoKm[];
+}
+
+/**
+ * Como `pontosACadaKm`, mas além dos marcos de km também devolve a linha
+ * fatiada nesses marcos, sem perder os vértices intermediários originais.
+ * Use isto (em vez de `pontosACadaKm`) sempre que for desenhar a via —
+ * ligar só os marcos com retas descaracteriza o traçado real da estrada.
+ */
+export function segmentarPorKm(
+  linha: Coordenada[],
+  stepKm = 1,
+  kmInicio = 0
+): SegmentacaoKm {
+  if (linha.length < 2) {
+    return { segmentos: [], pontosKm: [] };
+  }
+
+  const pontosKm: PontoKm[] = [];
+  const segmentos: Coordenada[][] = [];
+  let segmentoAtual: Coordenada[] = [linha[0]];
+
+  let distanciaAcumulada = 0;
+  let proximoAlvo = stepKm;
+
+  for (let i = 0; i < linha.length - 1; i++) {
+    const a = linha[i];
+    const b = linha[i + 1];
+    const distSegmento = distanciaKm(a, b);
+
+    while (distSegmento > 0 && distanciaAcumulada + distSegmento >= proximoAlvo) {
+      const distFaltante = proximoAlvo - distanciaAcumulada;
+      const t = distFaltante / distSegmento;
+      const ponto = interpolar(a, b, t);
+
+      // fecha o trecho atual exatamente no marco de km...
+      segmentoAtual.push(ponto);
+      segmentos.push(segmentoAtual);
+      pontosKm.push({ posicao: ponto, km: kmInicio + proximoAlvo });
+
+      // ...e começa o próximo trecho a partir do mesmo ponto, mantendo a
+      // linha contínua
+      segmentoAtual = [ponto];
+
+      proximoAlvo += stepKm;
+    }
+
+    distanciaAcumulada += distSegmento;
+    segmentoAtual.push(b);
+  }
+
+  // último trecho: do último marco (ou do início, se nenhum marco coube na
+  // linha) até o fim real da linha
+  segmentos.push(segmentoAtual);
+
+  return { segmentos, pontosKm };
+}
+
 /** Comprimento total (km) de uma linha, somando todos os segmentos. */
 export function comprimentoTotalKm(linha: Coordenada[]): number {
   let total = 0;

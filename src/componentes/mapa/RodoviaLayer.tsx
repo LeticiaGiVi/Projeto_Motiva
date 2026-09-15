@@ -2,7 +2,7 @@ import { Fragment, useMemo } from "react";
 import { Polyline, CircleMarker, Tooltip } from "react-leaflet";
 import { useRodoviaLinhas } from "../../scripts/RodoviaLinhas";
 import type { Via, Subvia } from "../../scripts/viasData";
-import { pontosACadaKm, type Coordenada } from "../../scripts/geoUtils";
+import { segmentarPorKm, type Coordenada } from "../../scripts/geoUtils";
 import {
   gerarDadoVegetacao,
   faixaCor,
@@ -18,8 +18,12 @@ interface RodoviaLayerProps {
 
 interface LinhaProcessada {
   indiceLinha: number;
-  /** marcos ordenados: início real da linha + 1 ponto por km + fim real */
-  marcos: Coordenada[];
+  /**
+   * Trechos da geometria real entre cada marco de km (início real -> 1º
+   * marco -> ... -> fim real), cada um com todos os vértices originais
+   * preservados, para o traçado seguir a curva real da via.
+   */
+  segmentos: Coordenada[][];
   /** pontos de km com o dado de vegetação já resolvido (para as bolinhas) */
   pontosKm: { posicao: Coordenada; km: number; dado: ReturnType<typeof gerarDadoVegetacao> }[];
 }
@@ -34,17 +38,14 @@ export default function RodoviaLayer({ via, subvia, cor }: RodoviaLayerProps) {
       const kmInicio =
         subvia.trechos?.[indiceLinha]?.kmInicio ?? subvia.trechos?.[0]?.kmInicio ?? 0;
 
-      const pontosKm = pontosACadaKm(linha, 1, kmInicio).map((p) => ({
+      const { segmentos, pontosKm: pontosKmBrutos } = segmentarPorKm(linha, 1, kmInicio);
+
+      const pontosKm = pontosKmBrutos.map((p) => ({
         ...p,
         dado: gerarDadoVegetacao(subvia.id, p.km),
       }));
 
-      const marcos: Coordenada[] =
-        pontosKm.length === 0
-          ? [linha[0], linha[linha.length - 1]]
-          : [linha[0], ...pontosKm.map((p) => p.posicao), linha[linha.length - 1]];
-
-      return { indiceLinha, marcos, pontosKm };
+      return { indiceLinha, segmentos, pontosKm };
     });
   }, [linhas, subvia.id, subvia.trechos]);
 
@@ -52,7 +53,7 @@ export default function RodoviaLayer({ via, subvia, cor }: RodoviaLayerProps) {
 
   return (
     <>
-      {linhasProcessadas.map(({ indiceLinha, marcos, pontosKm }) => {
+      {linhasProcessadas.map(({ indiceLinha, segmentos, pontosKm }) => {
         // cor de cada segmento entre dois marcos consecutivos: usa a
         // vegetação do marco de km que "fecha" aquele pedaço da via
         const corDoSegmento = (indiceSegmento: number): string => {
@@ -63,10 +64,10 @@ export default function RodoviaLayer({ via, subvia, cor }: RodoviaLayerProps) {
 
         return (
           <Fragment key={`${subvia.id}-${indiceLinha}`}>
-            {marcos.slice(0, -1).map((ponto, i) => (
+            {segmentos.map((seg, i) => (
               <Polyline
                 key={`${subvia.id}-${indiceLinha}-seg-${i}`}
-                positions={[ponto, marcos[i + 1]]}
+                positions={seg}
                 pathOptions={{ color: corDoSegmento(i), weight: 5, opacity: 0.85 }}
               />
             ))}
